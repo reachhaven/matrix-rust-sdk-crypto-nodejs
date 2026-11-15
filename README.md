@@ -112,6 +112,16 @@ $ npm install --save @matrix-org/matrix-sdk-crypto-nodejs
 The downloader appends `/v<version>/<filename>` to this base URL, so the mirror
 must preserve the same directory layout as the GitHub Releases page.
 
+### Verification of the prebuilt library
+
+The npm package carries a `checksums.json` file with the SHA-256 digest of
+every prebuilt library on its GitHub release. The install script checks the
+library it downloads, and one it finds already in place, against that file.
+If the library does not match, or the file does not list it, the script
+deletes the library and fails the install, so a mirror must serve the exact
+files of the GitHub release. Packages without `checksums.json`, from older
+releases or packed from a source checkout, install the library unchecked.
+
 ## Development
 
 This Node.js binding is written in [Rust]. To build this binding, you need to

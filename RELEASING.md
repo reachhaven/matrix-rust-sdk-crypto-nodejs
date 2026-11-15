@@ -17,3 +17,10 @@
     3. Merge the PR. (Prefer a genuine merge rather than a squash so that
        the tagged commit is included in the history.)
 7. Update the release on github and publish.
+
+Before it packs the npm package, the release workflow writes the SHA-256 digest
+that GitHub records for each `*.node` asset of the draft release into
+`checksums.json`, which is published in the package. `download-lib.js` refuses
+a library that the file does not list or that does not match it. Once a version
+is on npm, do not replace its libraries on the GitHub release, as installs of
+that version would fail; publish a new version instead.

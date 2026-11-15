@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+-   Verify the downloaded prebuilt library against SHA-256 digests published in the npm package, and fail the install when it does not match. A mirror set through `MATRIX_SDK_CRYPTO_DOWNLOADS_BASE_URL` must serve the exact files of the GitHub release.
+-   Save the downloaded prebuilt library under its own name, download it again when it is left over from another version, and report download errors instead of `ReferenceError: err is not defined`.
+
 ## v0.7.0 - 2026-11-11
 
 -   Update matrix-rust-sdk to `0.19.1`:
