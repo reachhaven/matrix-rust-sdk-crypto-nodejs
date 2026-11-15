@@ -227,11 +227,27 @@ jobs:
           cache: ""
           package-manager-cache: false
 
+      - name: Record checksums of prebuilt libraries
+        run: |
+          gh release view "$INPUTS_TAG" --json assets --jq '
+            [.assets[] | select(.name | endswith(".node"))
+              | if (.digest // "") | test("^sha256:[0-9a-f]{64}$")
+                then {key: .name, value: (.digest | ltrimstr("sha256:"))}
+                else error("\(.name) has no SHA-256 digest")
+                end]
+            | from_entries' > checksums.json
+        env:
+          INPUTS_TAG: ${{ inputs.tag || github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+
       - name: Build lib
         run: |
           pnpm install --ignore-scripts
           pnpm release-build
           pnpm pack
+
+      - name: Check that the package ships the checksums
+        run: tar -tzf *.tgz package/checksums.json
 
       - name: Upload npm package to release
         run: |

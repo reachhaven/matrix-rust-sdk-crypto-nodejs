@@ -3,6 +3,7 @@ const path = require("path");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { DownloaderHelper } = require("node-downloader-helper");
 const { version } = require("./package.json");
+const { verifyLib } = require("./verify-lib");
 
 // Get the platform and architecture based on environment variables,
 // falling back to the current platform and architecture.
@@ -26,6 +27,14 @@ const byteHelper = function (value) {
     return (value / Math.pow(1024, Math.floor(number))).toFixed(1) + " " + units[number];
 };
 
+function checkLib(libname) {
+    if (verifyLib(__dirname, libname)) {
+        console.info(`Verified ${libname} against the checksum shipped with this package`);
+    } else {
+        console.warn(`Not verified: this package ships no checksums.json to check ${libname} against`);
+    }
+}
+
 async function download_lib(libname) {
     const VERSION_FILE = path.join(__dirname, libname + ".version");
     try {
@@ -33,8 +42,9 @@ async function download_lib(libname) {
         const downloadedVersion = readFileSync(VERSION_FILE, "utf-8");
         if (downloadedVersion === version) {
             console.debug("File already in place, not downloading");
+            checkLib(libname);
+            return;
         }
-        return;
     } catch (ex) {
         if (ex.code === "ENOENT") {
             // Missing file, continue;
@@ -49,6 +59,7 @@ async function download_lib(libname) {
     const url = `${DOWNLOADS_BASE_URL}/${CURRENT_VERSION}/${libname}`;
     console.info(`Downloading lib ${libname} from ${url}`);
     const dl = new DownloaderHelper(url, __dirname, {
+        fileName: libname,
         override: true,
     });
 
@@ -78,9 +89,10 @@ async function download_lib(libname) {
     });
     try {
         await dl.start();
+        checkLib(libname);
         writeFileSync(path.join(__dirname, libname + ".version"), version);
     } catch (ex) {
-        console.error(err);
+        console.error(ex);
         process.exit(1);
     }
 }
